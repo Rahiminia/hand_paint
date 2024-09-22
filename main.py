@@ -4,7 +4,13 @@ import math
 import numpy as np
 from point import Point
 
+wCam, hCam = 640, 480
+cam = cv2.VideoCapture(0)
+cam.set(3,wCam)
+cam.set(4,hCam)
 COLOR = (0, 0, 0)
+CANVAS_BOUNDING_BOX = ((int(wCam - wCam *2 / 3), 0), (wCam, int(hCam * 2 / 3)))
+STATES = {"IDLE": 0, "PAINTING": 1}
 
 def draw_points(image, points):
     for i in range(1, len(points)):
@@ -12,6 +18,10 @@ def draw_points(image, points):
             cv2.circle(image, points[i].get_coords(), 2, COLOR, -1)
             continue
         cv2.line(image, points[i - 1].get_coords(), points[i].get_coords(), COLOR, 2)
+
+
+def draw_bounding_box():
+    cv2.rectangle(image, CANVAS_BOUNDING_BOX[0], CANVAS_BOUNDING_BOX[1], (0, 255, 0), 2)
 
 
 def check_bounding_box(point, box):
@@ -24,15 +34,9 @@ def euclidean_distance(point, ref_point):
     return math.sqrt((point[0] - ref_point[0])**2 + (point[1] - ref_point[1])**2)
 
 
-wCam, hCam = 640, 480
-cam = cv2.VideoCapture(0)
-cam.set(3,wCam)
-cam.set(4,hCam)
 hands = mp.solutions.hands.Hands(model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 mp_landmarks = mp.solutions.hands.HandLandmark
 points = []
-CANVAS_BOUNDING_BOX = ((int(wCam - wCam *2 / 3), 0), (wCam, int(hCam * 2 / 3)))
-STATES = {"IDLE": 0, "PAINTING": 1}
 state = STATES["IDLE"]
 POINT_INTERVAL = 2
 last_point_time = 0
@@ -42,7 +46,6 @@ while cam.isOpened():
     success, image = cam.read()
     image = cv2.flip(image, 1)
     results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    cv2.rectangle(image, CANVAS_BOUNDING_BOX[0], CANVAS_BOUNDING_BOX[1], (0, 255, 0), 2)
     if results.multi_hand_landmarks:
         hand_landmarks = results.multi_hand_landmarks[0].landmark
         WRIST = hand_landmarks[mp_landmarks.WRIST].x, hand_landmarks[mp_landmarks.WRIST].y
@@ -72,6 +75,7 @@ while cam.isOpened():
                 is_end_point = False
                 if check_bounding_box(new_point, CANVAS_BOUNDING_BOX):
                     points.append(new_point)
+    draw_bounding_box()
     draw_points(image, points)
     cv2.imshow('handDetector', image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
