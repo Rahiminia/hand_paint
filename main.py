@@ -34,6 +34,13 @@ def euclidean_distance(point, ref_point):
     return math.sqrt((point[0] - ref_point[0])**2 + (point[1] - ref_point[1])**2)
 
 
+def check_duplicate_point(last_point, point):
+    distance = euclidean_distance(last_point, point)
+    if distance < 10 :
+        return False
+    return True
+
+
 hands = mp.solutions.hands.Hands(model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 mp_landmarks = mp.solutions.hands.HandLandmark
 points = []
@@ -73,8 +80,13 @@ while cam.isOpened():
                     type=Point.POINT_TYPE['END'] if is_end_point else Point.POINT_TYPE['LINE']
                 )
                 is_end_point = False
+                print(len(points))
                 if check_bounding_box(new_point, CANVAS_BOUNDING_BOX):
-                    points.append(new_point)
+                    if len(points)>1 :
+                        if check_duplicate_point(points[-1].get_coords(), new_point.get_coords()):
+                            points.append(new_point)
+                    else:
+                        points.append(new_point)
     draw_bounding_box()
     draw_points(image, points)
     cv2.imshow('handDetector', image)
