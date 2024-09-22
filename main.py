@@ -5,12 +5,11 @@ import numpy as np
 from point import Point
 
 wCam, hCam = 640, 480
-cam = cv2.VideoCapture(0)
-cam.set(3,wCam)
-cam.set(4,hCam)
 COLOR = (0, 0, 0)
 CANVAS_BOUNDING_BOX = ((int(wCam - wCam *2 / 3), 0), (wCam, int(hCam * 2 / 3)))
 STATES = {"IDLE": 0, "PAINTING": 1}
+POINT_INTERVAL = 2
+MIN_DISTANCE = 2
 
 def draw_points(image, points):
     for i in range(1, len(points)):
@@ -36,16 +35,18 @@ def euclidean_distance(point, ref_point):
 
 def check_duplicate_point(last_point, point):
     distance = euclidean_distance(last_point, point)
-    if distance < 10 :
+    if distance < MIN_DISTANCE:
         return False
     return True
 
 
 hands = mp.solutions.hands.Hands(model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 mp_landmarks = mp.solutions.hands.HandLandmark
+cam = cv2.VideoCapture(0)
+cam.set(3,wCam)
+cam.set(4,hCam)
 points = []
 state = STATES["IDLE"]
-POINT_INTERVAL = 2
 last_point_time = 0
 is_end_point = False
 while cam.isOpened():
@@ -80,16 +81,14 @@ while cam.isOpened():
                     type=Point.POINT_TYPE['END'] if is_end_point else Point.POINT_TYPE['LINE']
                 )
                 is_end_point = False
-                print(len(points))
                 if check_bounding_box(new_point, CANVAS_BOUNDING_BOX):
-                    if len(points)>1 :
-                        if check_duplicate_point(points[-1].get_coords(), new_point.get_coords()):
-                            points.append(new_point)
-                    else:
-                        points.append(new_point)
+                    if len(points) > 1:
+                        if not check_duplicate_point(points[-1].get_coords(), new_point.get_coords()):
+                            continue
+                    points.append(new_point)
     draw_bounding_box()
     draw_points(image, points)
-    cv2.imshow('handDetector', image)
+    cv2.imshow('HandPaint', image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
       break
 
