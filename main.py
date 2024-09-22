@@ -2,16 +2,23 @@ import cv2
 import mediapipe as mp
 import math
 import numpy as np
+from point import Point
+
+COLOR = (0, 0, 0)
 
 def draw_points(image, points):
-    for point in points:
-        cv2.circle(image, point, 5, (0, 0, 0), -1)
+    for i in range(1, len(points)):
+        if points[i].get_type() == Point.POINT_TYPE['END']:
+            cv2.circle(image, points[i].get_coords(), 2, COLOR, -1)
+            continue
+        cv2.line(image, points[i - 1].get_coords(), points[i].get_coords(), COLOR, 2)
 
 
 def check_bounding_box(point, box):
-    if point[0] > box[0][0] and point[0] < box[1][0] and point[1] > box[0][1] and point[1] < box[1][1]:
+    if point.get_coords()[0] > box[0][0] and point.get_coords()[0] < box[1][0] and point.get_coords()[1] > box[0][1] and point.get_coords()[1] < box[1][1]:
         return True
     return False
+
 
 def euclidean_distance(point, ref_point):
     return math.sqrt((point[0] - ref_point[0])**2 + (point[1] - ref_point[1])**2)
@@ -27,7 +34,11 @@ points = []
 CANVAS_BOUNDING_BOX = ((int(wCam - wCam *2 / 3), 0), (wCam, int(hCam * 2 / 3)))
 STATES = {"IDLE": 0, "PAINTING": 1}
 state = STATES["IDLE"]
+POINT_INTERVAL = 2
+last_point_time = 0
+is_end_point = False
 while cam.isOpened():
+    last_point_time += 1
     success, image = cam.read()
     image = cv2.flip(image, 1)
     results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -49,10 +60,18 @@ while cam.isOpened():
             state = STATES["PAINTING"]
         else:
             state = STATES["IDLE"]
+            is_end_point = True
         if state == STATES["PAINTING"]:
-            new_point = (int(INDEX_FINGER_TIP[0] * wCam), int(INDEX_FINGER_TIP[1] * hCam))
-            if check_bounding_box(new_point, CANVAS_BOUNDING_BOX):
-                points.append(new_point)
+            if last_point_time >= POINT_INTERVAL:
+                last_point_time = 0
+                new_point = Point(
+                    INDEX_FINGER_TIP[0] * wCam,
+                    INDEX_FINGER_TIP[1] * hCam,
+                    type=Point.POINT_TYPE['END'] if is_end_point else Point.POINT_TYPE['LINE']
+                )
+                is_end_point = False
+                if check_bounding_box(new_point, CANVAS_BOUNDING_BOX):
+                    points.append(new_point)
     draw_points(image, points)
     cv2.imshow('handDetector', image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
