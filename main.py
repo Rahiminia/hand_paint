@@ -7,7 +7,7 @@ from point import Point
 wCam, hCam = 640, 480
 BRUSH_COLOR = (0, 0, 0)
 BRUSH_SIZE = 2
-CANVAS_BOUNDING_BOX = ((int(wCam - wCam *2 / 3), 0), (wCam, int(hCam * 2 / 3)))
+CANVAS_BOUNDING_BOX = ((int(wCam / 3), 0), (wCam, int(hCam * 2 / 3)))
 STATES = {"IDLE": 0, "PAINTING": 1}
 POINT_INTERVAL = 1
 MIN_DISTANCE = 3
@@ -16,7 +16,6 @@ BRUSH_COLORS = {
     'g': (0, 255, 0),  # Green
     'b': (255, 0, 0),  # Blue
     'l': (0, 0, 0),    # Black
-    'w': (255, 255, 255) #white
 }
 BRUSH_SIZES = {
     '1': 2,
@@ -55,6 +54,12 @@ def check_duplicate_point(last_point, point):
     return True
 
 
+def save_paint(points):
+    canvas = np.ones((hCam, wCam, 3)) * 255
+    draw_points(canvas, points)
+    cv2.imwrite('canvas.jpg', canvas[:CANVAS_BOUNDING_BOX[1][1], CANVAS_BOUNDING_BOX[0][0]:])
+
+
 hands = mp.solutions.hands.Hands(model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 mp_landmarks = mp.solutions.hands.HandLandmark
 cam = cv2.VideoCapture(0)
@@ -77,6 +82,9 @@ while cam.isOpened():
     if _key in BRUSH_SIZES:
         BRUSH_SIZE = BRUSH_SIZES[_key]
     if _key == 'e':
+        points = []
+    if _key == 's':
+        save_paint(points)
         points = []
     if _key == 'q':
         break
