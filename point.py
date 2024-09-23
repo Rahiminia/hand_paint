@@ -5,6 +5,7 @@ class Point:
     _type = None
     _color = None
     _size = None
+    
     def __init__(self, x, y, type=POINT_TYPE['LINE'], color=(0, 0, 0), size=2):
         self._x = int(x)
         self._y = int(y)
