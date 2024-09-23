@@ -6,6 +6,7 @@ from point import Point
 
 wCam, hCam = 640, 480
 COLOR = (0, 0, 0)
+PAINT_SIZE = 2
 CANVAS_BOUNDING_BOX = ((int(wCam - wCam *2 / 3), 0), (wCam, int(hCam * 2 / 3)))
 STATES = {"IDLE": 0, "PAINTING": 1}
 POINT_INTERVAL = 2
@@ -13,10 +14,12 @@ MIN_DISTANCE = 2
 
 def draw_points(image, points):
     for i in range(1, len(points)):
+        COLOR = points[i].get_color()
+        PAINT_SIZE = points[i].get_size()
         if points[i].get_type() == Point.POINT_TYPE['END']:
-            cv2.circle(image, points[i].get_coords(), 2, COLOR, -1)
+            cv2.circle(image, points[i].get_coords(), PAINT_SIZE, COLOR, -1)
             continue
-        cv2.line(image, points[i - 1].get_coords(), points[i].get_coords(), COLOR, 2)
+        cv2.line(image, points[i - 1].get_coords(), points[i].get_coords(), COLOR, PAINT_SIZE)
 
 
 def draw_bounding_box():
@@ -49,6 +52,21 @@ points = []
 state = STATES["IDLE"]
 last_point_time = 0
 is_end_point = False
+
+color_map = {
+    'r': (0, 0, 255),  # Red
+    'g': (0, 255, 0),  # Green
+    'b': (255, 0, 0),  # Blue
+    'l': (0, 0, 0),    # Black
+    'w': (255, 255, 255) #white
+}
+
+paint_size = {
+    '1': 2,  # S
+    '2': 6,  # M
+    '3': 12  # L
+}
+
 while cam.isOpened():
     last_point_time += 1
     success, image = cam.read()
@@ -72,13 +90,27 @@ while cam.isOpened():
         else:
             state = STATES["IDLE"]
             is_end_point = True
+        
+        key = cv2.waitKey(1) & 0xFF
+        _key = chr(key)
+        if _key in color_map:
+            COLOR = color_map[_key]
+        if _key in paint_size:
+            PAINT_SIZE = paint_size[_key]
+        if _key == 'e':
+            points = []
+        if _key == 'q':
+            break
+
         if state == STATES["PAINTING"]:
             if last_point_time >= POINT_INTERVAL:
                 last_point_time = 0
                 new_point = Point(
                     INDEX_FINGER_TIP[0] * wCam,
                     INDEX_FINGER_TIP[1] * hCam,
-                    type=Point.POINT_TYPE['END'] if is_end_point else Point.POINT_TYPE['LINE']
+                    type=Point.POINT_TYPE['END'] if is_end_point else Point.POINT_TYPE['LINE'],
+                    color= COLOR,
+                    size=PAINT_SIZE
                 )
                 is_end_point = False
                 if check_bounding_box(new_point, CANVAS_BOUNDING_BOX):
