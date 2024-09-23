@@ -12,6 +12,8 @@ CANVAS_BOUNDING_BOX = ((int(wCam / 3), 0), (wCam, int(hCam * 2 / 3)))
 STATES = {"IDLE": 0, "PAINTING": 1}
 POINT_INTERVAL = 1
 MIN_DISTANCE = 3
+NOTIF_TIME = 60
+NOTIF_LOCATION = (CANVAS_BOUNDING_BOX[0][0], CANVAS_BOUNDING_BOX[1][1] + 20)
 BRUSH_COLORS = {
     'r': (0, 0, 255),  # Red
     'g': (0, 255, 0),  # Green
@@ -23,6 +25,13 @@ BRUSH_SIZES = {
     '2': 6,
     '3': 12
 }
+
+def draw_notification(image, text):
+    font = cv2.FONT_HERSHEY_DUPLEX
+    fontScale = 0.6
+    thickness = 1
+    cv2.putText(image, text, NOTIF_LOCATION, font, fontScale, (36, 36, 190), thickness, cv2.LINE_AA)
+
 
 def draw_hints(image):
     font = cv2.FONT_HERSHEY_DUPLEX
@@ -108,7 +117,15 @@ state = STATES["IDLE"]
 last_point_time = 0
 is_end_point = False
 point_is_valid = False
+notification_last_shown = 0
+is_notificatin_showing = False
 while cam.isOpened():
+    if is_notificatin_showing:
+        if notification_last_shown >= NOTIF_TIME:
+            is_notificatin_showing = False
+            notification_last_shown = 0
+        else:
+            notification_last_shown += 1
     last_point_time += 1
     success, image = cam.read()
     image = cv2.flip(image, 1)
@@ -123,6 +140,7 @@ while cam.isOpened():
         points = []
     if _key == 's':
         save_paint(points)
+        is_notificatin_showing = True
         points = []
     if _key == 'q':
         break
@@ -164,5 +182,7 @@ while cam.isOpened():
     draw_bounding_box()
     draw_points(image, points)
     draw_hints(image)
+    if is_notificatin_showing:
+        draw_notification(image, 'Canvas Saved!')
     cv2.imshow('HandPaint', image)
 cam.release()
