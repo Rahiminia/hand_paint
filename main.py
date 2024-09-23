@@ -1,3 +1,4 @@
+import os
 import cv2
 import mediapipe as mp
 import math
@@ -54,10 +55,24 @@ def check_duplicate_point(last_point, point):
     return True
 
 
+def last_filename_index():
+    files = os.listdir('.')
+    last_index = 0
+    for filename in files:
+        if filename.startswith('canvas'):
+            index = filename[6:-4]
+            if index != '':
+                last_index = int(index)
+            else:
+                last_index = 0
+    return last_index
+
+
 def save_paint(points):
     canvas = np.ones((hCam, wCam, 3)) * 255
     draw_points(canvas, points)
-    cv2.imwrite('canvas.jpg', canvas[:CANVAS_BOUNDING_BOX[1][1], CANVAS_BOUNDING_BOX[0][0]:])
+    filename = 'canvas' + str(last_filename_index() + 1) + '.jpg'
+    cv2.imwrite(filename, canvas[:CANVAS_BOUNDING_BOX[1][1], CANVAS_BOUNDING_BOX[0][0]:])
 
 
 hands = mp.solutions.hands.Hands(model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5)
