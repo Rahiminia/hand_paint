@@ -24,6 +24,29 @@ BRUSH_SIZES = {
     '3': 12
 }
 
+def draw_hints(image):
+    font = cv2.FONT_HERSHEY_DUPLEX
+    fontScale = 0.6
+    thickness = 1
+    texts = [
+        ["Press keys:", 'l'],
+        ["Red: R", 'r'],
+        ["Green: G", 'g'],
+        ["Blue: B", 'b'],
+        ["Black: L", 'l'],
+        ["", "l"],
+        ["Small Brush: 1", 'l'],
+        ["Medium Brush: 2", 'l'],
+        ["Large Brush: 3", 'l'],
+        ["", "l"],
+        ["Erase: E", 'l'],
+        ["Save: S", 'l'],
+        ["Quit: Q", 'l']
+    ]
+    for i, text in enumerate(texts):
+        cv2.putText(image, text[0], (20, (i + 1) * 25), font, fontScale, BRUSH_COLORS[text[1]], thickness, cv2.LINE_AA)
+
+
 def draw_points(image, points):
     for i in range(1, len(points)):
         point_color = points[i].get_color()
@@ -140,5 +163,6 @@ while cam.isOpened():
                     points.append(new_point)
     draw_bounding_box()
     draw_points(image, points)
+    draw_hints(image)
     cv2.imshow('HandPaint', image)
 cam.release()
