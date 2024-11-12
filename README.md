@@ -10,10 +10,11 @@
   A fun project to draw with your fingertips 🖌️
 </p>
 <div align='center'>
-  <a href="https://github.com/Rahiminia/hand_paint/new/master?filename=README.md#features">Features</a> .
-  <a href="https://github.com/Rahiminia/hand_paint/new/master?filename=README.md#requirements">Requirements</a> .
-  <a href="https://github.com/Rahiminia/hand_paint/new/master?filename=README.md#installation">Installation</a> .
-  <a href="https://github.com/Rahiminia/hand_paint/new/master?filename=README.md#usage">Usage</a>
+  <a href="#features-">Features</a> .
+  <a href="#requirements-">Requirements</a> .
+  <a href="#installation-">Installation</a> .
+  <a href="#usage-%EF%B8%8F">Usage</a> .
+  <a href="#keymap-%EF%B8%8F">Keymap</a>
 </div>
 </br>
 </br>
@@ -25,7 +26,7 @@ Welcome to HandPaint! This application allows users to create digital drawings u
 webcam live video is captured by [OpenCV](https://github.com/opencv/opencv) and fingertip locations are determined by [MediaPipe](https://github.com/google-ai-edge/mediapipe).
 
 
-## features ✨
+## Features ✨
 - Point your finger to draw 
 - Draw in 4 Different Colors
 - Change brush size (3 Sizes)
