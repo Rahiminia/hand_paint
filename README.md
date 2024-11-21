@@ -65,11 +65,13 @@ webcam live video is captured by [OpenCV](https://github.com/opencv/opencv) and 
 [My Portfolio Website](https://www.rahiminia.info)
 
 ## Keymap ⌨️
-- [R G B L]: Change brush color
-- [1 2 3]: Change brush size
-- E: Erase canvas
-- S: Save canvas *in the same dir as main.py*
-- Q: Quit
+Key | Functionality
+|----------|:-------------:|
+R G B L | Change brush color
+1 2 3 | change brush size
+E | Erase canvas
+S | Save canvas *in the same dir as main.py*
+Q | Quit
 
 ## Contributing 🤝
 
